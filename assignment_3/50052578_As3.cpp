@@ -1,5 +1,6 @@
 // COS2611 Assignment 3
-// 50052578 Jones GWE
+// Full name: Garreth William Emile Jones
+// Student Number: 50052578
 
 #include <climits>
 #include <forward_list> // singly-linked list implementation from STL
@@ -149,5 +150,20 @@ int main() {
       weightedGraphType::fromWeightAdjacencyList(distances, NUM_CITIES);
 
   printAdjacencyMatrix(graph);
+
+  cout << endl << "Select index of starting city: ";
+  int startIndex;
+  cin >> startIndex;
+
   return 0;
 }
+
+// --- Section: Reflections ---
+
+/*
+ * No generative AI tools were used for this assignment.
+ * The follwing sources were consulted:
+ * 1. Malik, D.S. (2018). C++ Programming: Program Design Including Data
+ * Structures. Cengage Learning.
+ *
+ */
