@@ -1,3 +1,7 @@
+// COS2611 Assignment 3
+// 50052578 Jones GWE
+
+#include <climits>
 #include <forward_list> // singly-linked list implementation from STL
 #include <iostream>
 #include <string>
@@ -33,9 +37,83 @@ forward_list<weightedEdge> distances[NUM_CITIES] = {
 };
 
 // --- Section: Define Weighted Graph Class ---
+class weightedGraphType {
 
-// adjacency matrix with all the links between cities and their corresponding
-// distances
-int adjacencyMatrix[NUM_CITIES][NUM_CITIES];
+public:
+  // Function to create the graph and the weight matrix from an adjacency list
+  // of weighted edges
+  static weightedGraphType
+  fromWeightAdjacencyList(const forward_list<weightedEdge> *weightedEdges,
+                          int size) {
+    weightedGraphType wg(size);
 
-int main() { return 0; }
+    for (int i = 0; i < size; i++) {
+      for (const weightedEdge &edge : weightedEdges[i]) {
+        wg.graph[i].push_front(edge.head);
+        wg.weights[i][edge.head] = edge.weight;
+      }
+    }
+
+    return wg;
+  }
+
+  // Function to determine the weight of a shortest path
+  // from vertex, that is, source, to every other vertex
+  // in the graph.
+  // Postcondition: The weight of the shortest path from
+  //  vertex to every other vertex in the
+  //  graph is determined.
+  void shortestPath(int vertex);
+
+  // Function to print the shortest weight from vertex
+  // to the other vertex in the graph.
+  // Postcondition: The weight of the shortest path from
+  //  vertex to every other vertex in the
+  //  graph is printed.
+  void printShortestDistance(int vertex);
+
+  // Constructor
+  // Postcondition: gSize = size;
+  //  graph is an array of pointers to linked lists.
+  //  weights is a two-dimensional array to
+  //  store the weights of the edges, initialized to MAX_INT.
+  //  smallestWeight is an array to store the
+  //  smallest weight from source to vertices.
+  weightedGraphType(int size = 0) {
+    graph = new forward_list<int>[size];
+    gSize = size;
+    weights = new int *[size];
+    for (int i = 0; i < size; i++) {
+      weights[i] = new int[size];
+      for (int j = 0; j < size; j++)
+        weights[i][j] = INT_MAX;
+    }
+
+    smallestWeight = new int[size];
+  }
+
+  // Destructor
+  // The storage occupied by the vertices and the arrays
+  // weights and smallestWeight is deallocated.
+  ~weightedGraphType() {
+    for (int i = 0; i < gSize; i++) {
+      graph[i].clear();
+      delete[] weights[i];
+    }
+    delete[] weights;
+    delete smallestWeight;
+  }
+
+protected:
+  int gSize;                // number of vertices
+  forward_list<int> *graph; // adjacency list
+  int **weights;            // weight matrix
+  int *smallestWeight;      // store the smallest weight from source to vertices
+};
+
+// --- Section: Main Function ---
+int main() {
+  weightedGraphType graph =
+      weightedGraphType::fromWeightAdjacencyList(distances, NUM_CITIES);
+  return 0;
+}
