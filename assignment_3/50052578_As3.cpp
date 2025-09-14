@@ -3,7 +3,9 @@
 
 #include <climits>
 #include <forward_list> // singly-linked list implementation from STL
+#include <iomanip>
 #include <iostream>
+#include <ostream>
 #include <string>
 
 using namespace std;
@@ -11,6 +13,7 @@ using namespace std;
 // --- Section: Data Initialization ---
 
 constexpr int NUM_CITIES = 7;
+constexpr int COL_WIDTH = 18;
 
 string cities[NUM_CITIES] = {"Cape Town", "Bloemfontein", "Johannesburg",
                              "Pretoria",  "Gaborone",     "Windhoek",
@@ -104,16 +107,47 @@ public:
     delete smallestWeight;
   }
 
+  friend void printAdjacencyMatrix(const weightedGraphType &graph);
+
 protected:
   int gSize;                // number of vertices
   forward_list<int> *graph; // adjacency list
-  int **weights;            // weight matrix
+  int **weights;            // weight adjacency matrix
   int *smallestWeight;      // store the smallest weight from source to vertices
 };
+
+// --- Section: Helper Functions ---
+
+// Returns a string representing the city, given its index. This string will
+// contain the city name followed by the index value in brackets.
+string toStringFromIndex(int index) {
+  ostringstream oss;
+  oss << cities[index] << " (" << index << ')';
+  return oss.str();
+}
+
+// Prints the adjacency matrix with the city names as column and row headers.
+void printAdjacencyMatrix(const weightedGraphType &graph) {
+  cout << "Adjacency Matrix (Distances in km):" << endl;
+  cout << setw(COL_WIDTH) << "";
+  for (int i = 0; i < graph.gSize; i++)
+    cout << setw(COL_WIDTH) << toStringFromIndex(i);
+  cout << endl;
+  for (int i = 0; i < graph.gSize; i++) {
+    cout << setw(COL_WIDTH) << toStringFromIndex(i);
+    for (int j = 0; j < graph.gSize; j++)
+      cout << setw(COL_WIDTH)
+           << (graph.weights[i][j] == INT_MAX ? "x"
+                                              : to_string(graph.weights[i][j]));
+    cout << endl;
+  }
+}
 
 // --- Section: Main Function ---
 int main() {
   weightedGraphType graph =
       weightedGraphType::fromWeightAdjacencyList(distances, NUM_CITIES);
+
+  printAdjacencyMatrix(graph);
   return 0;
 }
