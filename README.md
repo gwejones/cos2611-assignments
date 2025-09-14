@@ -2,3 +2,4 @@
 
 1. [Assignment 1](https://mymodules.dtls.unisa.ac.za/mod/assign/view.php?id=1069799)
 2. [Assignment 2](https://mymodules.dtls.unisa.ac.za/mod/workshop/view.php?id=1194015)
+3. [Assignment 3](https://mymodules.dtls.unisa.ac.za/mod/assign/view.php?id=1069801)
