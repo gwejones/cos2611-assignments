@@ -3,13 +3,17 @@
 // Student Number: 50052578
 
 #include <cstdlib>
+#include <forward_list>
+#include <iostream>
+#include <sstream>
 #include <string>
+#include <unordered_map>
 
 using namespace std;
 
 // --- Section: Data Initialization ---
 
-const string nodeData = R"(
+const string intersectionData = R"(
 id,name,lat,lon,population
 1,Riverbend,34.0522,-118.2437,1200
 2,Oakridge,34.0590,-118.2490,860
@@ -21,8 +25,8 @@ id,name,lat,lon,population
 8,Willowgate,34.1005,-118.2910,520
 9,Fairhaven,34.1070,-118.2980,1500
 10,Lakeview,34.1135,-118.3060,1320
-11 Greenwood,34.1200,-118.3130,980
-12 Hillcrest,34.1265,-118.3200,860
+11,Greenwood,34.1200,-118.3130,980
+12,Hillcrest,34.1265,-118.3200,860
 13,Crestline,34.1330,-118.3270,740
 14,Redrock,34.1395,-118.3340,690
 15,Silverpond,34.1460,-118.3410,820
@@ -38,7 +42,7 @@ id,name,lat,lon,population
 25,Ironmere,34.2110,-118.4110,690
 )";
 
-const string edgeData = R"(
+const string roadData = R"(
 from,to,road_type,distance_km,speed_limit_kmh,one_way
 1,2,local_street,2.3,30,false
 2,3,arterial,1.8,50,false
@@ -73,7 +77,48 @@ from,to,road_type,distance_km,speed_limit_kmh,one_way
 
 // --- Section: Define ADT ---
 
-class Graph {};
+struct Edge {
+  int head;
+  float weight;
+};
+
+template <typename T> struct Node {
+  T value;
+  forward_list<Edge> edges;
+};
+
+struct Intersection {
+  string name;
+  float lat, lon;
+  friend ostream &operator<<(ostream &os, const Intersection &i) {
+    os << i.name;
+    return os;
+  }
+};
+
+template <typename T> class Graph {
+
+public:
+  void addNode(int key, T value) {
+    forward_list<Edge> *edges = new forward_list<Edge>();
+    adj[key] = {value, *edges};
+  }
+
+  void addEdge(int tail, const Edge edge) { adj[tail].edges.push_front(edge); }
+
+  void displayNodes() {
+    for (auto it = adj.begin(); it != adj.end(); ++it) {
+      cout << "[" << it->first << "] " << it->second.value;
+      for (Edge e : it->second.edges) {
+        cout << " " << e.head;
+      }
+      cout << endl;
+    }
+  }
+
+private:
+  unordered_map<int, Node<T>> adj;
+};
 
 // --- Section: Helper Functions ---
 
@@ -85,10 +130,55 @@ void clearScreen() {
 #endif
 }
 
+void readData(const string intersectionsCsv, const string roadsCsv,
+              Graph<Intersection> &graph) {
+  string line;
+
+  // Add intersections to graph
+  stringstream ids(intersectionsCsv);
+  getline(ids, line); // ignore newline
+  getline(ids, line); // ignore column headers
+  while (getline(ids, line)) {
+    Intersection intersection;
+    stringstream ls(line);
+    string inStr;
+    getline(ls, inStr, ',');
+    int id = stoi(inStr);
+    getline(ls, inStr, ',');
+    intersection.name = inStr;
+    getline(ls, inStr, ',');
+    intersection.lat = stof(inStr);
+    getline(ls, inStr, ',');
+    intersection.lon = stof(inStr);
+    graph.addNode(id, intersection);
+  }
+
+  // Add edges to graph
+  stringstream rds(roadsCsv);
+  getline(rds, line); // ignore newline
+  getline(rds, line); // ignore column headers
+  while (getline(rds, line)) {
+    Edge e;
+    stringstream ls(line);
+    string inStr;
+    getline(ls, inStr, ','); // read road starting intersection
+    int tail = stoi(inStr);
+    getline(ls, inStr, ','); // read road ending intersection
+    e.head = stoi(inStr);
+    getline(ls, inStr, ','); // ignore road type
+    getline(ls, inStr, ','); // read road distance
+    e.weight = stof(inStr);
+    graph.addEdge(tail, e);
+  }
+}
+
 // --- Section: Main Program ---
 
 int main() {
   clearScreen();
+  Graph<Intersection> distanceGraph;
+  readData(intersectionData, roadData, distanceGraph);
+  distanceGraph.displayNodes();
   return 0;
 }
 
@@ -97,8 +187,8 @@ int main() {
 /*
  *
  * Sources:
- * 1. ChatGPT was used to generate the road network dataset. Ie, nodeData &
- * edgeData. The prompt used was "Generate a dataset in CSV format for a
- * fictional towns road network, which can be used to populate a graph. There
- * should be at least 20 nodes."
+ * 1. ChatGPT was used to generate the road network dataset, ie,
+ * intersectionData & roadData. The prompt used was "Generate a dataset in CSV
+ * format for a fictional town's road network, which can be used to populate a
+ * graph. There should be at least 20 nodes."
  */
