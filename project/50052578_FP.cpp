@@ -2,6 +2,7 @@
 // Full name: Garreth William Emile Jones
 // Student Number: 50052578
 
+#include <climits>
 #include <cstdlib>
 #include <forward_list>
 #include <iostream>
@@ -172,13 +173,38 @@ void readData(const string intersectionsCsv, const string roadsCsv,
   }
 }
 
+void showMap(Graph<Intersection> &graph) { graph.displayNodes(); }
+
+int showMainMenu() {
+  int selection;
+  cout << "MENU:\n";
+  cout << "1. Display routes\n";
+  cout << "2. Add route\n";
+  cout << "3. Exit\n";
+  cout << "> ";
+  if (!(cin >> selection))
+    return INT_MAX;
+  return selection;
+}
+
 // --- Section: Main Program ---
 
 int main() {
-  clearScreen();
   Graph<Intersection> distanceGraph;
   readData(intersectionData, roadData, distanceGraph);
-  distanceGraph.displayNodes();
+  bool exit = false;
+  while (!exit) {
+    clearScreen();
+    showMap(distanceGraph);
+    switch (showMainMenu()) {
+    case 1:
+      break;
+    case 2:
+      break;
+    default:
+      exit = true;
+    }
+  }
   return 0;
 }
 
