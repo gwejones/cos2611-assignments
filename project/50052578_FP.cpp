@@ -5,6 +5,7 @@
 #include <climits>
 #include <cstdlib>
 #include <forward_list>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -107,12 +108,18 @@ public:
 
   void addEdge(int tail, const Edge edge) { adj[tail].edges.push_front(edge); }
 
-  void displayNodes() {
+  string nodeToString(int key) {
+    ostringstream oss;
+    oss << "[" << key << "] " << adj[key].value;
+    return oss.str();
+  }
+
+  void displayAllNodes() {
     for (auto it = adj.begin(); it != adj.end(); ++it) {
-      cout << "[" << it->first << "] " << it->second.value;
-      for (Edge e : it->second.edges) {
-        cout << " " << e.head;
-      }
+      cout << nodeToString(it->first);
+      for (Edge e : it->second.edges)
+        cout << "\n\t-(" << fixed << setprecision(1) << e.weight << "km)-> "
+             << nodeToString(e.head);
       cout << endl;
     }
   }
@@ -173,7 +180,7 @@ void readData(const string intersectionsCsv, const string roadsCsv,
   }
 }
 
-void showMap(Graph<Intersection> &graph) { graph.displayNodes(); }
+void showMap(Graph<Intersection> &graph) { graph.displayAllNodes(); }
 
 int showMainMenu() {
   int selection;
