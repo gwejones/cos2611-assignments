@@ -176,7 +176,15 @@ void readData(const string intersectionsCsv, const string roadsCsv,
     getline(ls, inStr, ','); // ignore road type
     getline(ls, inStr, ','); // read road distance
     e.weight = stof(inStr);
+    getline(ls, inStr, ','); // ignore road speed limit
     graph.addEdge(tail, e);
+    getline(ls, inStr); // read road is one-way
+    if (inStr != "true") {
+      // if the road is not one-way, add a reciprocal edge to represent the road
+      // in the other direction
+      Edge eReciprocal = {tail, e.weight};
+      graph.addEdge(e.head, eReciprocal);
+    }
   }
 }
 
