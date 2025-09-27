@@ -56,6 +56,7 @@ from,to,length_km,road_type,one_way
 
 // --- Section: Define ADT ---
 
+// generic data structure for storing the edges of a weighted graph
 struct Edge {
   int tail;
   int head;
@@ -70,21 +71,13 @@ struct Edge {
   }
 };
 
+// generic data structure for storing the nodes in a weighted graph
 template <typename T> struct Node {
   T value;
   forward_list<Edge> edges;
 };
 
-struct Intersection {
-  int id;
-  string name;
-  float lat, lon;
-  friend ostream &operator<<(ostream &os, const Intersection &i) {
-    os << "[" << i.id << "] " << i.name;
-    return os;
-  }
-};
-
+// generic ADT for storing and performing operations on weighted graph
 template <typename T> class Graph {
 public:
   T getNodeValue(int key) const {
@@ -125,6 +118,18 @@ public:
 
 private:
   unordered_map<int, Node<T>> adj;
+};
+
+// domain-specific data structire for storing the intersections in the city's
+// road network
+struct Intersection {
+  int id;
+  string name;
+  float lat, lon;
+  friend ostream &operator<<(ostream &os, const Intersection &i) {
+    os << "[" << i.id << "] " << i.name;
+    return os;
+  }
 };
 
 // --- Section: Helper Functions ---
