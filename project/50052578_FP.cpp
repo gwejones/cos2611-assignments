@@ -149,6 +149,7 @@ struct Intersection {
 // --- Section: Helper Functions ---
 
 void clearScreen() {
+  cout << endl;
 #ifdef _WIN32
   system("cls"); // For Windows
 #else
@@ -291,14 +292,22 @@ void listRoutes(const set<forward_list<Edge>> routes,
 void addRouteMenu(set<forward_list<Edge>> &existingRoutes,
                   Graph<Intersection> &graph) {
 
-  int sourceKey, destKey;
+  int startKey, destKey;
 
   cout << "Starting intersection?\n> ";
-  cin >> sourceKey;
+  cin >> startKey;
+  Intersection startIntersection;
+  try {
+    startIntersection = graph.getNodeValue(startKey);
+  } catch (const std::out_of_range &e) {
+    cout << "Intersection with id=" << startKey << " does not exist.\n";
+    return;
+  }
+
   cout << "Destination intersection?\n> ";
   cin >> destKey;
 
-  graph.computeSSSP(sourceKey);
+  graph.computeSSSP(startKey);
 
   forward_list<Edge> shortestRoute = graph.getShortestPath(destKey);
 
