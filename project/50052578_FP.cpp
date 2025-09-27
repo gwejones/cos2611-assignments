@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <queue>
 #include <set>
 #include <sstream>
 #include <string>
@@ -100,6 +101,38 @@ public:
   }
 
   void addEdge(const Edge edge) { adj[edge.tail].edges.push_front(edge); }
+
+  forward_list<T> breadthFirstTraversal(int sourceNodeKey) {
+    forward_list<T> traversalList;    // list of visited nodes, in BFS order
+    unordered_map<int, bool> visited; // keeps track of visited nodes
+    queue<int> q;                     // queue required for BFS
+    int numNodesVisited = 0;          // keeps track of number of nodes visited
+
+    visited[sourceNodeKey] = true;
+    q.push(sourceNodeKey);
+    std::cout << "[XAI] BFS traversal starting from node " << sourceNodeKey
+              << "...\n";
+    while (!q.empty()) {
+      // Dequeue a node and visit it
+      int currentNode = q.front();
+      q.pop();
+      std::cout << "[XAI] visiting node " << currentNode << "...\n";
+      numNodesVisited++;
+      traversalList.push_front(getNodeValue(currentNode));
+      // Get all adjacent nodes of the dequeued node. If an adjacent
+      // node has not been visited, mark as visited and enqueue.
+      for (Edge e : adj[currentNode].edges) {
+        if (!visited[e.head]) {
+          visited[e.head] = true;
+          q.push(e.head);
+        }
+      }
+    }
+    cout << "[XAI] visited " << numNodesVisited << " nodes in total...\n";
+    traversalList.reverse(); // ensure first element in linked list is first
+                             // visited node
+    return traversalList;
+  }
 
   void computeSSSP(int sourceNodeKey) {
     // pass
@@ -294,6 +327,7 @@ void addRouteMenu(set<forward_list<Edge>> &existingRoutes,
 
   int startKey, destKey;
 
+  // get starting intersection from user
   cout << "Starting intersection?\n> ";
   cin >> startKey;
   Intersection startIntersection;
@@ -304,8 +338,30 @@ void addRouteMenu(set<forward_list<Edge>> &existingRoutes,
     return;
   }
 
+  // get destination intersection from user
+  forward_list<Intersection> reachableDestinations =
+      graph.breadthFirstTraversal(startKey);
+  reachableDestinations.pop_front(); // remove starting intersection as its not
+                                     // a viable destination
+  cout << "Destinations reachable from " << startIntersection << " are:\n";
+  for (Intersection d : reachableDestinations)
+    cout << d << endl;
   cout << "Destination intersection?\n> ";
   cin >> destKey;
+  try {
+    Intersection destIntersection = graph.getNodeValue(destKey);
+  } catch (const std::out_of_range &e) {
+    cout << "Intersection with id=" << destKey << " does not exist.\n";
+    return;
+  }
+  bool foundDest = false;
+  for (Intersection d : reachableDestinations)
+    if (d.id == destKey)
+      foundDest = true;
+  if (!foundDest) {
+    cout << "Intersection with id=" << destKey << " is not reachable.\n";
+    return;
+  }
 
   graph.computeSSSP(startKey);
 
