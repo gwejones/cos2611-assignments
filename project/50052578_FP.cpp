@@ -7,6 +7,7 @@
 #include <forward_list>
 #include <iomanip>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -59,6 +60,14 @@ struct Edge {
   int tail;
   int head;
   float weight;
+  // Overload the less-than operator for the purpose of determining the
+  // uniqueness of routes. Required for set operations.
+  bool operator<(const Edge &other) const {
+    if (tail != other.tail) {
+      return tail < other.tail;
+    }
+    return head < other.head;
+  }
 };
 
 template <typename T> struct Node {
@@ -77,19 +86,23 @@ struct Intersection {
 };
 
 template <typename T> class Graph {
-
 public:
-  void addNode(int key, T value) {
-    forward_list<Edge> *edges = new forward_list<Edge>();
-    adj[key] = {value, *edges};
+  T getNodeValue(int key) const {
+    T value = adj.at(key).value;
+    return value;
   }
 
-  vector<T> getAllNodes() const {
+  vector<T> getAllNodeValues() const {
     vector<T> nodeValues;
     for (auto it = adj.begin(); it != adj.end(); ++it) {
       nodeValues.push_back(it->second.value);
     }
     return nodeValues;
+  }
+
+  void addNode(int key, const T value) {
+    forward_list<Edge> *edges = new forward_list<Edge>();
+    adj[key] = {value, *edges};
   }
 
   void addEdge(const Edge edge) { adj[edge.tail].edges.push_front(edge); }
@@ -124,11 +137,17 @@ void clearScreen() {
 #endif
 }
 
+void pressEnterToContinue() {
+  cout << "Press <Enter> to continue..." << endl;
+  cin.ignore();
+  cin.get();
+}
+
 void readData(const string intersectionsCsv, const string roadsCsv,
               Graph<Intersection> &graph) {
-  string line;
 
   // Add intersections to graph
+  string line;
   stringstream ids(intersectionsCsv);
   getline(ids, line); // ignore newline
   getline(ids, line); // ignore column headers
@@ -174,7 +193,7 @@ void readData(const string intersectionsCsv, const string roadsCsv,
   }
 }
 
-void showMap(Graph<Intersection> &graph) {
+void showMap(const Graph<Intersection> &graph) {
   char **screenBuffer = new char *[MAX_ROWS];
   for (int i = 0; i < MAX_ROWS; i++)
     screenBuffer[i] = new char[MAX_COLS];
@@ -184,7 +203,7 @@ void showMap(Graph<Intersection> &graph) {
     for (int col = 0; col < MAX_COLS; col++)
       screenBuffer[row][col] = ' ';
 
-  vector<Intersection> intersections = graph.getAllNodes();
+  vector<Intersection> intersections = graph.getAllNodeValues();
 
   // get row & col boundaries of map
   float minLat = (float)INT_MAX;
@@ -232,14 +251,33 @@ void showMap(Graph<Intersection> &graph) {
   delete[] screenBuffer;
 }
 
+void listRoutes(const set<forward_list<Edge>> routes,
+                const Graph<Intersection> &graph) {
+  int routeNum = 1;
+  cout << "Num\tLength\tRoute\n";
+  for (auto it = routes.begin(); it != routes.end(); ++it) {
+    float totalLength = 0;
+    ostringstream oss;
+    for (Edge e : *it) {
+      totalLength += e.weight;
+      oss << " -(" << setprecision(2) << e.weight << "km)-> "
+          << graph.getNodeValue(e.head);
+    }
+    cout << routeNum++ << ".\t" << setprecision(2) << totalLength << "km\t"
+         << graph.getNodeValue((*it).front().tail) << oss.str();
+    cout << endl;
+  }
+}
+
 int getMenuSelection() {
   int selection;
-  cout << "Menu:\n-----\n";
-  cout << "1. List roads\n";
-  cout << "2. List routes\n";
-  cout << "3. Add route\n";
-  cout << "4. Delete route\n";
-  cout << "5. Exit\n";
+  cout << "Menu:\n";
+  cout << "-----\n";
+  cout << "1.\tList roads\n";
+  cout << "2.\tList routes\n";
+  cout << "3.\tAdd route\n";
+  cout << "4.\tDelete route\n";
+  cout << "5.\tExit\n";
   cout << "> ";
   if (!(cin >> selection))
     return INT_MAX;
@@ -251,6 +289,13 @@ int getMenuSelection() {
 int main() {
   Graph<Intersection> distanceGraph;
   readData(intersectionData, roadData, distanceGraph);
+  set<forward_list<Edge>> routes;
+
+  // Edge e1 = {1, 2, 1.1};
+  // Edge e2 = {2, 3, .7};
+  // forward_list<Edge> route1 = {e1, e2};
+  // routes.insert(route1);
+
   bool exit = false;
   while (!exit) {
     clearScreen();
@@ -264,6 +309,8 @@ int main() {
     case 1:
       break;
     case 2:
+      listRoutes(routes, distanceGraph);
+      pressEnterToContinue();
       break;
     default:
       exit = true;
