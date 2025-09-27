@@ -56,6 +56,7 @@ from,to,length_km,road_type,one_way
 // --- Section: Define ADT ---
 
 struct Edge {
+  int tail;
   int head;
   float weight;
 };
@@ -83,7 +84,7 @@ public:
     adj[key] = {value, *edges};
   }
 
-  vector<T> getAllNodes() {
+  vector<T> getAllNodes() const {
     vector<T> nodeValues;
     for (auto it = adj.begin(); it != adj.end(); ++it) {
       nodeValues.push_back(it->second.value);
@@ -91,7 +92,7 @@ public:
     return nodeValues;
   }
 
-  void addEdge(int tail, const Edge edge) { adj[tail].edges.push_front(edge); }
+  void addEdge(const Edge edge) { adj[edge.tail].edges.push_front(edge); }
 
   string nodeToString(int key) {
     ostringstream oss;
@@ -135,14 +136,14 @@ void readData(const string intersectionsCsv, const string roadsCsv,
     Intersection intersection;
     stringstream ls(line);
     string inStr;
-    getline(ls, inStr, ',');
+    getline(ls, inStr, ','); // read intersection id
     int id = stoi(inStr);
     intersection.id = id;
-    getline(ls, inStr, ',');
+    getline(ls, inStr, ','); // read instersectio name
     intersection.name = inStr;
-    getline(ls, inStr, ',');
+    getline(ls, inStr, ','); // read intersection lattitude
     intersection.lat = stof(inStr);
-    getline(ls, inStr, ',');
+    getline(ls, inStr, ','); // read intersection longitude
     intersection.lon = stof(inStr);
     graph.addNode(id, intersection);
   }
@@ -156,19 +157,19 @@ void readData(const string intersectionsCsv, const string roadsCsv,
     stringstream ls(line);
     string inStr;
     getline(ls, inStr, ','); // read road starting intersection
-    int tail = stoi(inStr);
+    e.tail = stoi(inStr);
     getline(ls, inStr, ','); // read road ending intersection
     e.head = stoi(inStr);
     getline(ls, inStr, ','); // read road length
     e.weight = stof(inStr);
     getline(ls, inStr, ','); // ignore road type
-    graph.addEdge(tail, e);
+    graph.addEdge(e);
     getline(ls, inStr); // read road is one-way
     if (inStr != "true") {
       // if the road is not one-way, add a reciprocal edge to represent the road
       // in the other direction
-      Edge eReciprocal = {tail, e.weight};
-      graph.addEdge(e.head, eReciprocal);
+      Edge eRec = {e.head, e.tail, e.weight};
+      graph.addEdge(eRec);
     }
   }
 }
