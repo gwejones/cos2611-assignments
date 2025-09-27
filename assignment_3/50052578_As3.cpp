@@ -6,7 +6,8 @@
 #include <forward_list> // singly-linked list implementation from STL
 #include <iomanip>
 #include <iostream>
-#include <ostream>
+#include <queue>
+#include <sstream>
 #include <string>
 
 using namespace std;
@@ -62,12 +63,50 @@ public:
   }
 
   // Function to determine the weight of a shortest path
-  // from vertex, that is, source, to every other vertex
+  // from vertex (source) to every other vertex
   // in the graph.
-  // Postcondition: The weight of the shortest path from
-  //  vertex to every other vertex in the
-  //  graph is determined.
-  void shortestPath(int vertex);
+  // Postconditions:
+  //  smallestWeight contains the weight of the shortest path from vertex to
+  //  every other vertex in the graph is determined The shortest path is
+  //  returned.
+  forward_list<int> shortestPath(const int vertex, const int dest) {
+    vector<int> predecessors(gSize, -1);
+    for (int j = 0; j < gSize; j++)
+      smallestWeight[j] = weights[vertex][j];
+    bool *weightFound;
+    weightFound = new bool[gSize];
+    for (int j = 0; j < gSize; j++)
+      weightFound[j] = false;
+    weightFound[vertex] = true;
+    smallestWeight[vertex] = 0;
+    for (int i = 0; i < gSize - 1; i++) {
+      int minWeight = INT_MAX;
+      int v = -1; // closest to vertex, for which shortest path has not being
+                  // determined
+      for (int j = 0; j < gSize; j++)
+        if (!weightFound[j])
+          if (smallestWeight[j] < minWeight) {
+            v = j;
+            minWeight = smallestWeight[v];
+          }
+      if (v == -1)
+        break; // Remaining vertices are unreachable
+      weightFound[v] = true;
+      for (int j = 0; j < gSize; j++)
+        if (!weightFound[j])
+          if (minWeight + weights[v][j] < smallestWeight[j]) {
+            smallestWeight[j] = minWeight + weights[v][j];
+            predecessors[j] = v; // Track predecessor
+          }
+    }
+    delete[] weightFound;
+
+    // Reconstruct path from dest to vertex
+    forward_list<int> path;
+    for (int at = dest; at != -1; at = predecessors[at])
+      path.push_front(at);
+    return path;
+  }
 
   // Function to print the shortest weight from vertex
   // to the other vertex in the graph.
@@ -75,6 +114,34 @@ public:
   //  vertex to every other vertex in the
   //  graph is printed.
   void printShortestDistance(int vertex);
+
+  // Performs breadth-first traversal from starting index
+  // Postcondition: A linked list containing the traversal order is returned
+  forward_list<int> breadthFirstTraversal(const int index) const {
+    forward_list<int> bft;
+    queue<int> queue;
+    bool *visited;
+    visited = new bool[gSize];
+    for (int ind = 0; ind < gSize; ind++)
+      visited[ind] = false; // initialize the array visited[] to false
+    queue.push(index);
+    visited[index] = true;
+    bft.push_front(index);
+    while (!queue.empty()) {
+      int u = queue.front();
+      queue.pop();
+      for (auto it = graph[u].begin(); it != graph[u].end(); ++it) {
+        int w = *it;
+        if (!visited[w]) {
+          queue.push(w);
+          visited[w] = true;
+          bft.push_front(w);
+        }
+      }
+    }
+    delete[] visited;
+    return bft;
+  }
 
   // Constructor
   // Postcondition: gSize = size;
@@ -129,7 +196,7 @@ string toStringFromIndex(int index) {
 
 // Prints the adjacency matrix with the city names as column and row headers.
 void printAdjacencyMatrix(const weightedGraphType &graph) {
-  cout << "Adjacency Matrix (Distances in km):" << endl;
+  cout << endl << "Adjacency Matrix (Distances in km):" << endl;
   cout << setw(COL_WIDTH) << "";
   for (int i = 0; i < graph.gSize; i++)
     cout << setw(COL_WIDTH) << toStringFromIndex(i);
@@ -144,16 +211,51 @@ void printAdjacencyMatrix(const weightedGraphType &graph) {
   }
 }
 
+// Prints the list of reachable cities as a path, given a list of their indices
+// in BFS order.
+void printReachableCities(forward_list<int> reachableCities) {
+  reachableCities.reverse();
+  cout << "\nCities reachable from "
+       << toStringFromIndex(reachableCities.front())
+       << " in breadth-first traversal order:" << endl;
+  cout << toStringFromIndex(reachableCities.front());
+  reachableCities.pop_front();
+  while (!reachableCities.empty()) {
+    cout << " -> " << toStringFromIndex(reachableCities.front());
+    reachableCities.pop_front();
+  }
+  cout << endl << endl;
+}
+
 // --- Section: Main Function ---
 int main() {
   weightedGraphType graph =
       weightedGraphType::fromWeightAdjacencyList(distances, NUM_CITIES);
 
-  printAdjacencyMatrix(graph);
+  int startIndex = 0;
+  int destIndex;
+  while (startIndex >= 0) {
+    // display adjacency matrix to user
+    printAdjacencyMatrix(graph);
 
-  cout << endl << "Select index of starting city: ";
-  int startIndex;
-  cin >> startIndex;
+    // get desired starting city from user
+    cout << endl
+         << "Select index of starting city, or negative number to exit: ";
+    cin >> startIndex;
+    if (startIndex < 0)
+      break;
+
+    // show user possible destination cities
+    forward_list<int> bft = graph.breadthFirstTraversal(startIndex);
+    printReachableCities(bft);
+
+    // get desired destination city from user
+    cout << "Select index of destination city: ";
+    cin >> destIndex;
+
+    // display shortest path to destination city
+    forward_list<int> path = graph.shortestPath(startIndex, destIndex);
+  }
 
   return 0;
 }
@@ -162,8 +264,9 @@ int main() {
 
 /*
  * No generative AI tools were used for this assignment.
- * The follwing sources were consulted:
- * 1. Malik, D.S. (2018). C++ Programming: Program Design Including Data
- * Structures. Cengage Learning.
  *
+ * The following sources were consulted:
+ *  1. Malik, D.S. (2018). C++ Programming: Program Design Including Data
+ * Structures. Cengage Learning.
+ *  2. https://en.cppreference.com/w/cpp/container/forward_list.html
  */
