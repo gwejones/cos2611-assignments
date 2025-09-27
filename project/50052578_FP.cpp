@@ -7,6 +7,7 @@
 #include <forward_list>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <set>
 #include <sstream>
 #include <string>
@@ -100,6 +101,19 @@ public:
 
   void addEdge(const Edge edge) { adj[edge.tail].edges.push_front(edge); }
 
+  void computeSSSP(int sourceNodeKey) {
+    // pass
+  }
+
+  forward_list<Edge> getShortestPath(int destNodeKey) {
+    forward_list<Edge> sp;
+
+    // wip - temp values
+    sp = {{1, 2, 1.1}, {2, 3, .7}};
+
+    return sp;
+  }
+
   string nodeToString(int key) {
     ostringstream oss;
     oss << adj[key].value;
@@ -143,7 +157,7 @@ void clearScreen() {
 }
 
 void pressEnterToContinue() {
-  cout << "Press <Enter> to continue..." << endl;
+  cout << endl << "Press <Enter> to continue...";
   cin.ignore();
   cin.get();
 }
@@ -274,6 +288,49 @@ void listRoutes(const set<forward_list<Edge>> routes,
   }
 }
 
+void addRouteMenu(set<forward_list<Edge>> &existingRoutes,
+                  Graph<Intersection> &graph) {
+
+  int sourceKey, destKey;
+
+  cout << "Starting intersection?\n> ";
+  cin >> sourceKey;
+  cout << "Destination intersection?\n> ";
+  cin >> destKey;
+
+  graph.computeSSSP(sourceKey);
+
+  forward_list<Edge> shortestRoute = graph.getShortestPath(destKey);
+
+  set<forward_list<Edge>> newRoutes({shortestRoute});
+
+  listRoutes(newRoutes, graph);
+  int selection = 0;
+  cout << "Route to add?\n> ";
+  cin >> selection;
+  if (selection > 0 && selection <= newRoutes.size()) {
+    auto it = newRoutes.begin();
+    advance(it, selection - 1);
+    existingRoutes.insert(*it);
+    cout << "Route added...\n";
+  }
+}
+
+void deleteRouteMenu(set<forward_list<Edge>> &existingRoutes,
+                     Graph<Intersection> graph) {
+
+  listRoutes(existingRoutes, graph);
+  int selection = 0;
+  cout << "Route to delete?\n> ";
+  cin >> selection;
+  if (selection > 0 && selection <= existingRoutes.size()) {
+    auto it = existingRoutes.begin();
+    advance(it, selection - 1);
+    existingRoutes.erase(*it);
+    cout << "Route deleted...\n";
+  }
+}
+
 int getMenuSelection() {
   int selection;
   cout << "Menu:\n";
@@ -296,11 +353,6 @@ int main() {
   readData(intersectionData, roadData, distanceGraph);
   set<forward_list<Edge>> routes;
 
-  // Edge e1 = {1, 2, 1.1};
-  // Edge e2 = {2, 3, .7};
-  // forward_list<Edge> route1 = {e1, e2};
-  // routes.insert(route1);
-
   bool exit = false;
   while (!exit) {
     clearScreen();
@@ -315,6 +367,14 @@ int main() {
       break;
     case 2:
       listRoutes(routes, distanceGraph);
+      pressEnterToContinue();
+      break;
+    case 3:
+      addRouteMenu(routes, distanceGraph);
+      pressEnterToContinue();
+      break;
+    case 4:
+      deleteRouteMenu(routes, distanceGraph);
       pressEnterToContinue();
       break;
     default:
