@@ -10,71 +10,47 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 using namespace std;
 
 // --- Section: Data Initialization ---
 
+const string PROGRAM_TITLE = "Smart City Route Management System";
+const int MAX_ROWS = 40;
+const int MAX_COLS = 80;
+
 const string intersectionData = R"(
-id,name,lat,lon,population
-1,Riverbend,34.0522,-118.2437,1200
-2,Oakridge,34.0590,-118.2490,860
-3,Pinecrest,34.0655,-118.2550,940
-4,Maplewood,34.0720,-118.2605,1020
-5,Brookvale,34.0785,-118.2680,780
-6,Crestview,34.0860,-118.2765,1100
-7,Sunnyside,34.0930,-118.2830,670
-8,Willowgate,34.1005,-118.2910,520
-9,Fairhaven,34.1070,-118.2980,1500
-10,Lakeview,34.1135,-118.3060,1320
-11,Greenwood,34.1200,-118.3130,980
-12,Hillcrest,34.1265,-118.3200,860
-13,Crestline,34.1330,-118.3270,740
-14,Redrock,34.1395,-118.3340,690
-15,Silverpond,34.1460,-118.3410,820
-16,Northpoint,34.1525,-118.3480,900
-17,Eastport,34.1590,-118.3550,760
-18,Westhaven,34.1655,-118.3620,640
-19,Southgate,34.1720,-118.3690,700
-20,Meadowbank,34.1785,-118.3760,860
-21,Brightwood,34.1850,-118.3830,910
-22,Amberfield,34.1915,-118.3900,730
-23,Goldendale,34.1980,-118.3970,680
-24,Stonebridge,34.2045,-118.4040,720
-25,Ironmere,34.2110,-118.4110,690
+id,name,latitude,longitude,district
+1,Central Park,40.7128,-74.0060,Downtown
+2,Oak Street,40.7135,-74.0050,Old Town
+3,Riverfront,40.7145,-74.0075 East Bank
+4,Hilltop,40.7155,-74.0085,Northside
+5,Maple Ave,40.7162,-74.0048,West End
+6,Pine Junction,40.7170,-74.0035,Northside
+7,Crestview,40.7182,-74.0020,Uptown
+8,Riverside,40.7190,-74.0055,East Bank
+9,Brookside,40.7201,-74.0090,Southside
+10,Canyon Road,40.7210,-74.0070,Valley
+11,Lighthouse Point,40.7225,-74.0065,Waterfront
+12,Grammar Square,40.7130,-74.0080,Old Town
 )";
 
 const string roadData = R"(
-from,to,road_type,distance_km,speed_limit_kmh,one_way
-1,2,local_street,2.3,30,false
-2,3,arterial,1.8,50,false
-3,4,local_street,2.5,30,false
-4,5,collector,3.1,40,false
-5,6,arterial,2.9,50,false
-6,7,local_street,3.3,40,false
-7,8,collector,1.7,30,false
-8,9,local_street,2.4,40,false
-9,10,arterial,3.0,50,false
-10,11,local_street,2.2,30,false
-11,12,local_street,2.6,40,false
-12,13,arterial,2.1,50,false
-13,14,collector,3.4,40,false
-14,15,arterial,2.7,50,false
-15,16,local_street,1.9,30,false
-16,17,arterial,2.3,50,false
-17,18,local_street,2.8,40,false
-18,19,local_street,3.2,40,false
-19,20,collector,2.0,40,false
-20,21,arterial,2.4,50,false
-21,22,local_street,3.1,40,false
-22,23,arterial,2.9,50,false
-23,24,local_street,1.6,30,false
-24,25,arterial,2.2,50,false
-5,9,local_street,4.5,30,false
-12,16,collector,4.0,40,false
-18,22,collector,4.3,40,false
-7,14,local_street,3.7,30,false
-20,24,collector,3.5,40,false
+from,to,length_km,road_type,one_way
+1,2,0.8,street,false
+2,3,0.5,street,false
+3,4,0.7,avenue,true
+4,5,1.0,street,false
+5,6,0.6,avenue,false
+6,7,0.9,street,true
+7,8,0.5,road,false
+8,9,0.8,street,false
+9,10,1.1,avenue,false
+10,11,0.9,road,true
+12,1,0.7,avenue,false
+2,5,1.1,road,false
+4,8,1.2,street,false
 )";
 
 // --- Section: Define ADT ---
@@ -90,10 +66,11 @@ template <typename T> struct Node {
 };
 
 struct Intersection {
+  int id;
   string name;
   float lat, lon;
   friend ostream &operator<<(ostream &os, const Intersection &i) {
-    os << i.name;
+    os << "[" << i.id << "] " << i.name;
     return os;
   }
 };
@@ -106,11 +83,19 @@ public:
     adj[key] = {value, *edges};
   }
 
+  vector<T> getAllNodes() {
+    vector<T> nodeValues;
+    for (auto it = adj.begin(); it != adj.end(); ++it) {
+      nodeValues.push_back(it->second.value);
+    }
+    return nodeValues;
+  }
+
   void addEdge(int tail, const Edge edge) { adj[tail].edges.push_front(edge); }
 
   string nodeToString(int key) {
     ostringstream oss;
-    oss << "[" << key << "] " << adj[key].value;
+    oss << adj[key].value;
     return oss.str();
   }
 
@@ -152,6 +137,7 @@ void readData(const string intersectionsCsv, const string roadsCsv,
     string inStr;
     getline(ls, inStr, ',');
     int id = stoi(inStr);
+    intersection.id = id;
     getline(ls, inStr, ',');
     intersection.name = inStr;
     getline(ls, inStr, ',');
@@ -173,10 +159,9 @@ void readData(const string intersectionsCsv, const string roadsCsv,
     int tail = stoi(inStr);
     getline(ls, inStr, ','); // read road ending intersection
     e.head = stoi(inStr);
-    getline(ls, inStr, ','); // ignore road type
-    getline(ls, inStr, ','); // read road distance
+    getline(ls, inStr, ','); // read road length
     e.weight = stof(inStr);
-    getline(ls, inStr, ','); // ignore road speed limit
+    getline(ls, inStr, ','); // ignore road type
     graph.addEdge(tail, e);
     getline(ls, inStr); // read road is one-way
     if (inStr != "true") {
@@ -188,14 +173,72 @@ void readData(const string intersectionsCsv, const string roadsCsv,
   }
 }
 
-void showMap(Graph<Intersection> &graph) { graph.displayAllNodes(); }
+void showMap(Graph<Intersection> &graph) {
+  char **screenBuffer = new char *[MAX_ROWS];
+  for (int i = 0; i < MAX_ROWS; i++)
+    screenBuffer[i] = new char[MAX_COLS];
 
-int showMainMenu() {
+  // add intersections to screenbuffer
+  for (int row = 0; row < MAX_ROWS; row++)
+    for (int col = 0; col < MAX_COLS; col++)
+      screenBuffer[row][col] = ' ';
+
+  vector<Intersection> intersections = graph.getAllNodes();
+
+  // get row & col boundaries of map
+  float minLat = (float)INT_MAX;
+  float maxLat = -(float)INT_MAX;
+  float minLon = (float)INT_MAX;
+  float maxLon = -(float)INT_MAX;
+  for (Intersection i : intersections) {
+    if (i.lat < minLat)
+      minLat = i.lat;
+    if (i.lat > maxLat)
+      maxLat = i.lat;
+    if (i.lon < minLon)
+      minLon = i.lon;
+    if (i.lon > maxLon)
+      maxLon = i.lon;
+  }
+
+  // write each intersection name to screenbuffer
+  for (Intersection i : intersections) {
+    // map lattitude value to screen row
+    int row =
+        (MAX_ROWS - 1) - (i.lat - minLat) / (maxLat - minLat) * (MAX_ROWS - 1);
+    // map longitude value to screen row
+    int col = (i.lon - minLon) / (maxLon - minLon) * (MAX_COLS - 1);
+    ostringstream oss;
+    oss << i;
+    for (char c : oss.str()) {
+      screenBuffer[row][col] = c;
+      if (++col == MAX_COLS)
+        break;
+    }
+  }
+
+  // print screenbuffer
+  for (int row = 0; row < MAX_ROWS; row++) {
+    for (int col = 0; col < MAX_COLS; col++)
+      cout << screenBuffer[row][col];
+    cout << endl;
+  }
+
+  // deallocate screenbuffer memory
+  for (int i = 0; i < MAX_ROWS; ++i) {
+    delete[] screenBuffer[i];
+  }
+  delete[] screenBuffer;
+}
+
+int getMenuSelection() {
   int selection;
-  cout << "MENU:\n";
-  cout << "1. Display routes\n";
-  cout << "2. Add route\n";
-  cout << "3. Exit\n";
+  cout << "Menu:\n-----\n";
+  cout << "1. List roads\n";
+  cout << "2. List routes\n";
+  cout << "3. Add route\n";
+  cout << "4. Delete route\n";
+  cout << "5. Exit\n";
   cout << "> ";
   if (!(cin >> selection))
     return INT_MAX;
@@ -210,8 +253,13 @@ int main() {
   bool exit = false;
   while (!exit) {
     clearScreen();
+    cout << setw((MAX_COLS + PROGRAM_TITLE.length()) / 2) << PROGRAM_TITLE
+         << endl;
+    cout << setw((MAX_COLS + PROGRAM_TITLE.length()) / 2)
+         << string(PROGRAM_TITLE.length(), '-') << endl
+         << endl;
     showMap(distanceGraph);
-    switch (showMainMenu()) {
+    switch (getMenuSelection()) {
     case 1:
       break;
     case 2:
@@ -228,8 +276,8 @@ int main() {
 /*
  *
  * Sources:
- * 1. ChatGPT was used to generate the road network dataset, ie,
- * intersectionData & roadData. The prompt used was "Generate a dataset in CSV
- * format for a fictional town's road network, which can be used to populate a
- * graph. There should be at least 20 nodes."
+ * 1. ChatGPT was used to generate the road network dataset.
+ * The prompt used was "Generate a dataset in CSV format for a
+ * fictional town's road network which can be used to populate
+ * a graph. There should be at least 10 nodes."
  */
