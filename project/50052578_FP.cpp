@@ -146,15 +146,14 @@ public:
     return traversalList;
   }
 
-  void computeSSSP(int sourceNodeKey) {
-    cout << "[XAI] Using Dijkstra's algorithm to compute shortest paths "
+  forward_list<int> computeSSSP(int sourceNodeKey, int destNodeKey) {
+    cout << "[XAI] Using Dijkstra's algorithm to compute shortest path "
             "from node "
-         << sourceNodeKey << "...\n";
+         << sourceNodeKey << " to node " << destNodeKey << "...\n";
     unordered_map<int, float>
-        dist; // keep track of minimum distances to each node, where the key is
-              // the unique id of the node, and the value is the distance. A
-              // node whose key is not present in this map is either unreachable
-              // or has not had any shortest distance computed yet
+        dist; // keep track of minimum distances to each node
+    unordered_map<int, int>
+        pred; // keep track of each node's predessor on the shortest path
     priority_queue<MinDistance> pq; // min-heap
     dist[sourceNodeKey] = 0;
     pq.push({0, sourceNodeKey}); // push source with distance 0
@@ -174,21 +173,45 @@ public:
         int v = e.head;
         float weight = e.weight;
 
-        // if a shorter path to 'v' is found through 'u'
-        auto it = dist.find(v); // check if shortest distance value exists
+        auto it = dist.find(v); // check if shortest distance exists
+        // if 'v' does not have a shortest distance yet, or a shorter path to
+        // 'v' is found through 'u', update shortest distance to 'v'
         if (it == dist.end() || dist[u] + weight < dist[v]) {
-          dist[v] = dist[u] + weight;
+          float newDist = dist[u] + weight;
+          cout << "[XAI] relaxing distance to node " << v << ", d=" << newDist
+               << "...\n";
+          dist[v] = newDist;
+          pred[v] = u;
           pq.push(
-              {dist[v], v}); // Push updated distance and node to priority queue
+              {dist[v], v}); // push updated distance and node to priority queue
         }
       }
     }
 
-    // Print shortest distances
+    // print shortest distances
     for (auto d : dist) {
-      std::cout << "[XAI] distance to node " << d.first << ": " << d.second
-                << "...\n";
+      std::cout << "[XAI] shortest distance to node " << d.first << " is "
+                << d.second << "...\n";
     }
+
+    // recover the shortest path from predessesor map
+    forward_list<int> shortestPath;
+    int currentNodeKey = destNodeKey;
+    // walk backward from dest to source
+    while (currentNodeKey != sourceNodeKey) {
+      shortestPath.push_front(currentNodeKey);
+      currentNodeKey = pred.at(currentNodeKey);
+    }
+
+    // print shortest path
+    cout << "[XAI] shortest path is " << sourceNodeKey;
+    for (int &n : shortestPath) {
+      cout << "->" << n;
+    }
+    cout << endl;
+
+    shortestPath.push_front(sourceNodeKey); // add starting node at front
+    return shortestPath;
   }
 
   forward_list<Edge> getShortestPath(int destNodeKey) {
@@ -416,7 +439,7 @@ void addRouteMenu(set<forward_list<Edge>> &existingRoutes,
     return;
   }
 
-  graph.computeSSSP(startKey);
+  forward_list<int> sr = graph.computeSSSP(startKey, destKey);
 
   forward_list<Edge> shortestRoute = graph.getShortestPath(destKey);
 
