@@ -79,6 +79,18 @@ template <typename T> struct Node {
   forward_list<Edge> edges;
 };
 
+// generic data structure for keeping track of minimum distances to a given node
+// in a priority queue
+struct MinDistance {
+  float distance;
+  int node;
+  // Overload operator< for comparison (defines priority)
+  // Argument on the right side of operator< has higher priority
+  bool operator<(const MinDistance &other) const {
+    return distance > other.distance; // lower distance means higher priority
+  }
+};
+
 // generic ADT for storing and performing operations on weighted graph
 template <typename T> class Graph {
 public:
@@ -135,7 +147,48 @@ public:
   }
 
   void computeSSSP(int sourceNodeKey) {
-    // pass
+    cout << "[XAI] Using Dijkstra's algorithm to compute shortest paths "
+            "from node "
+         << sourceNodeKey << "...\n";
+    unordered_map<int, float>
+        dist; // keep track of minimum distances to each node, where the key is
+              // the unique id of the node, and the value is the distance. A
+              // node whose key is not present in this map is either unreachable
+              // or has not had any shortest distance computed yet
+    priority_queue<MinDistance> pq; // min-heap
+    dist[sourceNodeKey] = 0;
+    pq.push({0, sourceNodeKey}); // push source with distance 0
+
+    while (!pq.empty()) {
+      float d = pq.top().distance; // current shortest distance to 'u'
+      int u = pq.top().node;       // current vertex 'u'
+      pq.pop();
+
+      // if we found a shorter path to 'u' already, skip this entry
+      if (d > dist[u]) {
+        continue;
+      }
+
+      // explore neighbors of 'u'
+      for (const Edge e : adj[u].edges) {
+        int v = e.head;
+        float weight = e.weight;
+
+        // if a shorter path to 'v' is found through 'u'
+        auto it = dist.find(v); // check if shortest distance value exists
+        if (it == dist.end() || dist[u] + weight < dist[v]) {
+          dist[v] = dist[u] + weight;
+          pq.push(
+              {dist[v], v}); // Push updated distance and node to priority queue
+        }
+      }
+    }
+
+    // Print shortest distances
+    for (auto d : dist) {
+      std::cout << "[XAI] distance to node " << d.first << ": " << d.second
+                << "...\n";
+    }
   }
 
   forward_list<Edge> getShortestPath(int destNodeKey) {
@@ -167,7 +220,7 @@ private:
   unordered_map<int, Node<T>> adj;
 };
 
-// domain-specific data structire for storing the intersections in the city's
+// domain-specific data structure for storing the intersections in the city's
 // road network
 struct Intersection {
   int id;
