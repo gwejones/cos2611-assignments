@@ -96,17 +96,12 @@ template <typename T> class Graph {
 public:
   Node<T> getNode(int key) const { return adj.at(key); }
 
-  T getNodeValue(int key) const {
-    T value = adj.at(key).value;
-    return value;
-  }
-
-  vector<T> getAllNodeValues() const {
-    vector<T> nodeValues;
+  vector<Node<T>> getAllNodes() const {
+    vector<Node<T>> nodes;
     for (auto it = adj.begin(); it != adj.end(); ++it) {
-      nodeValues.push_back(it->second.value);
+      nodes.push_back(it->second);
     }
-    return nodeValues;
+    return nodes;
   }
 
   void addNode(int key, const T value) {
@@ -132,7 +127,7 @@ public:
       q.pop();
       cout << "[XAI] visiting node " << currentNode << "...\n";
       numNodesVisited++;
-      traversalList.push_front(getNodeValue(currentNode));
+      traversalList.push_front(getNode(currentNode).value);
       // Get all adjacent nodes of the dequeued node. If an adjacent
       // node has not been visited, mark as visited and enqueue.
       for (Edge e : adj[currentNode].edges) {
@@ -309,7 +304,9 @@ void showMap(const Graph<Intersection> &graph) {
     for (int col = 0; col < MAX_COLS; col++)
       screenBuffer[row][col] = ' ';
 
-  vector<Intersection> intersections = graph.getAllNodeValues();
+  vector<Intersection> intersections;
+  for (Node<Intersection> n : graph.getAllNodes())
+    intersections.push_back(n.value);
 
   // get row & col boundaries of map
   float minLat = (float)INT_MAX;
@@ -396,7 +393,7 @@ void addRouteMenu(set<forward_list<int>> &existingRoutes,
   cin >> startKey;
   Intersection startIntersection;
   try {
-    startIntersection = graph.getNodeValue(startKey);
+    startIntersection = graph.getNode(startKey).value;
   } catch (const std::out_of_range &e) {
     cout << "Intersection with id=" << startKey << " does not exist.\n";
     return;
@@ -413,7 +410,7 @@ void addRouteMenu(set<forward_list<int>> &existingRoutes,
   cout << "Destination intersection?\n> ";
   cin >> destKey;
   try {
-    Intersection destIntersection = graph.getNodeValue(destKey);
+    Intersection destIntersection = graph.getNode(destKey).value;
   } catch (const std::out_of_range &e) {
     cout << "Intersection with id=" << destKey << " does not exist.\n";
     return;
