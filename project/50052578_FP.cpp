@@ -216,31 +216,6 @@ public:
     return shortestPath;
   }
 
-  forward_list<Edge> getShortestPath(int destNodeKey) {
-    forward_list<Edge> sp;
-
-    // wip - temp values
-    sp = {{1, 2, 1.1}, {2, 3, .7}};
-
-    return sp;
-  }
-
-  string nodeToString(int key) {
-    ostringstream oss;
-    oss << adj[key].value;
-    return oss.str();
-  }
-
-  void displayAllNodes() {
-    for (auto it = adj.begin(); it != adj.end(); ++it) {
-      cout << nodeToString(it->first);
-      for (Edge e : it->second.edges)
-        cout << "\n\t-(" << fixed << setprecision(1) << e.weight << "km)-> "
-             << nodeToString(e.head);
-      cout << endl;
-    }
-  }
-
 private:
   unordered_map<int, Node<T>> adj;
 };
