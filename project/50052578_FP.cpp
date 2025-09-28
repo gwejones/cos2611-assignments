@@ -94,6 +94,8 @@ struct MinDistance {
 // generic ADT for storing and performing operations on weighted graph
 template <typename T> class Graph {
 public:
+  Node<T> getNode(int key) const { return adj.at(key); }
+
   T getNodeValue(int key) const {
     T value = adj.at(key).value;
     return value;
@@ -122,13 +124,13 @@ public:
 
     visited[sourceNodeKey] = true;
     q.push(sourceNodeKey);
-    std::cout << "[XAI] BFS traversal starting from node " << sourceNodeKey
-              << "...\n";
+    cout << "[XAI] BFS traversal starting from node " << sourceNodeKey
+         << "...\n";
     while (!q.empty()) {
       // Dequeue a node and visit it
       int currentNode = q.front();
       q.pop();
-      std::cout << "[XAI] visiting node " << currentNode << "...\n";
+      cout << "[XAI] visiting node " << currentNode << "...\n";
       numNodesVisited++;
       traversalList.push_front(getNodeValue(currentNode));
       // Get all adjacent nodes of the dequeued node. If an adjacent
@@ -380,29 +382,40 @@ void showMap(const Graph<Intersection> &graph) {
   delete[] screenBuffer;
 }
 
-void listRoutes(const set<forward_list<Edge>> routes,
+void listRoutes(const set<forward_list<int>> routes,
                 const Graph<Intersection> &graph) {
   int routeNum = 1;
   cout << "Num\tLength\tRoute\n";
   for (auto it = routes.begin(); it != routes.end(); ++it) {
+    forward_list<int> route = *it;
     float totalLength = 0;
     ostringstream oss;
-    for (Edge e : *it) {
-      totalLength += e.weight;
-      oss << " -(" << setprecision(2) << e.weight << "km)-> "
-          << graph.getNodeValue(e.head);
+    Node<Intersection> startingNode = graph.getNode(route.front());
+    int currentKey = route.front();
+    route.pop_front();
+    while (!route.empty()) {
+      Node<Intersection> currentNode = graph.getNode(currentKey);
+      Node<Intersection> nextNode = graph.getNode(route.front());
+      forward_list<Edge> edges = currentNode.edges;
+      float weight = 0;
+      for (Edge e : edges)
+        if (e.head == route.front())
+          weight = e.weight;
+      totalLength += weight;
+      oss << " -(" << setprecision(2) << weight << "km)-> " << nextNode.value;
+      currentKey = route.front();
+      route.pop_front();
     }
     cout << routeNum++ << ".\t" << setprecision(2) << totalLength << "km\t"
-         << graph.getNodeValue((*it).front().tail) << oss.str();
+         << startingNode.value << oss.str();
     cout << endl;
   }
 }
 
-void addRouteMenu(set<forward_list<Edge>> &existingRoutes,
+void addRouteMenu(set<forward_list<int>> &existingRoutes,
                   Graph<Intersection> &graph) {
 
   int startKey, destKey;
-
   // get starting intersection from user
   cout << "Starting intersection?\n> ";
   cin >> startKey;
@@ -440,10 +453,7 @@ void addRouteMenu(set<forward_list<Edge>> &existingRoutes,
   }
 
   forward_list<int> sr = graph.computeSSSP(startKey, destKey);
-
-  forward_list<Edge> shortestRoute = graph.getShortestPath(destKey);
-
-  set<forward_list<Edge>> newRoutes({shortestRoute});
+  set<forward_list<int>> newRoutes({sr});
 
   listRoutes(newRoutes, graph);
   int selection = 0;
@@ -457,9 +467,8 @@ void addRouteMenu(set<forward_list<Edge>> &existingRoutes,
   }
 }
 
-void deleteRouteMenu(set<forward_list<Edge>> &existingRoutes,
+void deleteRouteMenu(set<forward_list<int>> &existingRoutes,
                      Graph<Intersection> graph) {
-
   listRoutes(existingRoutes, graph);
   int selection = 0;
   cout << "Route to delete?\n> ";
@@ -492,7 +501,7 @@ int getMenuSelection() {
 int main() {
   Graph<Intersection> distanceGraph;
   readData(intersectionData, roadData, distanceGraph);
-  set<forward_list<Edge>> routes;
+  set<forward_list<int>> routes;
 
   bool exit = false;
   while (!exit) {
