@@ -331,10 +331,8 @@ void showMap(const Graph<Intersection> &graph) {
       maxLon = i.lon;
   }
 
-  // draw border around map
-  rows[0].push({0, string(MAX_COLS, '-')});
-  rows[MAX_ROWS - 1].push({0, string(MAX_COLS, '-')});
-  for (int r = 1; r < MAX_ROWS - 1; r++) {
+  // draw left and right borders around map
+  for (int r = 0; r < MAX_ROWS; r++) {
     rows[r].push({0, "|"});
     rows[r].push({MAX_COLS - 1, "|"});
   }
@@ -354,6 +352,7 @@ void showMap(const Graph<Intersection> &graph) {
   }
 
   // display each row
+  cout << '+' << string(MAX_COLS - 2, '-') << '+' << endl; // top border
   for (auto row : rows) {
     int col = 0;
     while (!row.empty() && col < MAX_COLS) {
@@ -362,16 +361,16 @@ void showMap(const Graph<Intersection> &graph) {
       cout << row.top().label;
       col += row.top().label.size() - 1;
       row.pop();
+      if (!row.empty() && row.top().col < col)
+        row.pop(); // remove a label if weve passed its col number
     }
     cout << endl;
   }
+  cout << '+' << string(MAX_COLS - 2, '-') << '+' << endl; // bottom border
 }
 
 void displayTitle() {
   cout << setw((MAX_COLS + PROGRAM_TITLE.length()) / 2) << PROGRAM_TITLE
-       << endl;
-  cout << setw((MAX_COLS + PROGRAM_TITLE.length()) / 2)
-       << string(PROGRAM_TITLE.length(), '-') << endl
        << endl;
 }
 
