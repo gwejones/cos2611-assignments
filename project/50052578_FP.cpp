@@ -91,6 +91,19 @@ struct MinDistance {
   }
 };
 
+// domain specific data structure for storing a label in a given row of a map
+// these are stored in a priority queue so that objects with lower col
+// values (higher priority) are rendered first, left to right
+struct MapLabel {
+  int col;
+  string label;
+  // overload operator< for comparison (defines priority)
+  // argument on the right side of operator< has higher priority
+  bool operator<(const MapLabel &other) const {
+    return col > other.col; // lower col value means higher priority
+  }
+};
+
 // generic ADT for storing and performing operations on weighted graph
 template <typename T> class Graph {
 public:
@@ -295,18 +308,12 @@ void readData(const string intersectionsCsv, const string roadsCsv,
 }
 
 void showMap(const Graph<Intersection> &graph) {
-  char **screenBuffer = new char *[MAX_ROWS];
-  for (int i = 0; i < MAX_ROWS; i++)
-    screenBuffer[i] = new char[MAX_COLS];
-
-  // add intersections to screenbuffer
-  for (int row = 0; row < MAX_ROWS; row++)
-    for (int col = 0; col < MAX_COLS; col++)
-      screenBuffer[row][col] = ' ';
-
   vector<Intersection> intersections;
   for (Node<Intersection> n : graph.getAllNodes())
     intersections.push_back(n.value);
+
+  // stores the labels for each row on the map
+  vector<priority_queue<MapLabel, vector<MapLabel>>> rows(MAX_ROWS);
 
   // get row & col boundaries of map
   float minLat = (float)INT_MAX;
@@ -324,34 +331,48 @@ void showMap(const Graph<Intersection> &graph) {
       maxLon = i.lon;
   }
 
-  // write each intersection name to screenbuffer
+  // draw border around map
+  rows[0].push({0, string(MAX_COLS, '-')});
+  rows[MAX_ROWS - 1].push({0, string(MAX_COLS, '-')});
+  for (int r = 1; r < MAX_ROWS - 1; r++) {
+    rows[r].push({0, "|"});
+    rows[r].push({MAX_COLS - 1, "|"});
+  }
+
+  // write each intersection name to appropriate map row
   for (Intersection i : intersections) {
-    // map lattitude value to screen row
+    // map latitude value to screen row
     int row =
         (MAX_ROWS - 1) - (i.lat - minLat) / (maxLat - minLat) * (MAX_ROWS - 1);
     // map longitude value to screen row
     int col = (i.lon - minLon) / (maxLon - minLon) * (MAX_COLS - 1);
     ostringstream oss;
     oss << i;
-    for (char c : oss.str()) {
-      screenBuffer[row][col] = c;
-      if (++col == MAX_COLS)
-        break;
-    }
+    // add map label to specific row, in order of ascending column number
+    col -= oss.str().length() / 2;
+    rows[row].push({col, oss.str()});
   }
 
-  // print screenbuffer
-  for (int row = 0; row < MAX_ROWS; row++) {
-    for (int col = 0; col < MAX_COLS; col++)
-      cout << screenBuffer[row][col];
+  // display each row
+  for (auto row : rows) {
+    int col = 0;
+    while (!row.empty() && col < MAX_COLS) {
+      while (col++ < row.top().col)
+        cout << ' ';
+      cout << row.top().label;
+      col += row.top().label.size() - 1;
+      row.pop();
+    }
     cout << endl;
   }
+}
 
-  // deallocate screenbuffer memory
-  for (int i = 0; i < MAX_ROWS; ++i) {
-    delete[] screenBuffer[i];
-  }
-  delete[] screenBuffer;
+void displayTitle() {
+  cout << setw((MAX_COLS + PROGRAM_TITLE.length()) / 2) << PROGRAM_TITLE
+       << endl;
+  cout << setw((MAX_COLS + PROGRAM_TITLE.length()) / 2)
+       << string(PROGRAM_TITLE.length(), '-') << endl
+       << endl;
 }
 
 void listRoutes(const set<forward_list<int>> routes,
@@ -478,11 +499,7 @@ int main() {
   bool exit = false;
   while (!exit) {
     clearScreen();
-    cout << setw((MAX_COLS + PROGRAM_TITLE.length()) / 2) << PROGRAM_TITLE
-         << endl;
-    cout << setw((MAX_COLS + PROGRAM_TITLE.length()) / 2)
-         << string(PROGRAM_TITLE.length(), '-') << endl
-         << endl;
+    displayTitle();
     showMap(distanceGraph);
     switch (getMenuSelection()) {
     case 1:
