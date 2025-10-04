@@ -37,6 +37,16 @@
  * Data Structures:
  * - Uses STL containers: vector, set, forward_list, unordered_map,
  * priority_queue.
+ * 
+ * Compilation:
+ * - Requires a C++11 compatible compiler.
+ * - g++ -std=c++11 -o route_manager 50052578_FP.cpp (Mac/Linux)
+ * - g++ -std=c++11 -o route_manager.exe 50052578_FP.cpp (Windows)
+ * 
+ * Execution:
+ * - Run the compiled executable from the command line.
+ *   ./route_manager      (Mac/Linux)
+ *  route_manager.exe    (Windows)
  *
  * Sources:
  * - Road network dataset generated using ChatGPT.
