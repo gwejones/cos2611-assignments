@@ -255,7 +255,7 @@ public:
    * @return std::forward_list<T> A list of node values visited during BFS, in
    * traversal order.
    *
-   * @note The function prints debug information to standard output during
+   * @note The function prints XAI information to standard output during
    * traversal.
    */
   forward_list<T> breadthFirstTraversal(int sourceNodeKey) {
@@ -266,12 +266,12 @@ public:
     visited[sourceNodeKey] = true;
     q.push(sourceNodeKey);
     cout << "[XAI] BFS traversal starting from node " << sourceNodeKey
-         << "...\n";
+         << " ...\n";
     while (!q.empty()) {
       // Dequeue a node and visit it
       int currentNode = q.front();
       q.pop();
-      cout << "[XAI] visiting node " << currentNode << "...\n";
+      cout << "[XAI] visiting node " << currentNode << " ...\n";
       numNodesVisited++;
       traversalList.push_front(getNode(currentNode).value);
       // Get all adjacent nodes of the dequeued node. If an adjacent
@@ -283,7 +283,7 @@ public:
         }
       }
     }
-    cout << "[XAI] visited " << numNodesVisited << " nodes in total...\n";
+    cout << "[XAI] visited " << numNodesVisited << " nodes in total ...\n";
     traversalList.reverse(); // ensure first element in linked list is first
                              // visited node
     return traversalList;
@@ -305,7 +305,7 @@ public:
    * representing the shortest path from the source node to the destination node
    * (inclusive).
    *
-   * @note The function prints debug information about the algorithm's progress
+   * @note The function prints XAI information about the algorithm's progress
    * and the computed shortest path.
    * @note Assumes that the adjacency list 'adj' and the Edge structure are
    * properly defined and accessible.
@@ -315,7 +315,7 @@ public:
   forward_list<int> computeSSSP(int sourceNodeKey, int destNodeKey) {
     cout << "[XAI] Using Dijkstra's algorithm to compute shortest path "
             "from node "
-         << sourceNodeKey << " to node " << destNodeKey << "...\n";
+         << sourceNodeKey << " to node " << destNodeKey << " ...\n";
     unordered_map<int, float>
         dist; // keep track of minimum distances to each node
     unordered_map<int, int>
@@ -345,7 +345,7 @@ public:
         if (it == dist.end() || dist[u] + weight < dist[v]) {
           float newDist = dist[u] + weight;
           cout << "[XAI] relaxing distance to node " << v << ", d=" << newDist
-               << "...\n";
+               << " ...\n";
           dist[v] = newDist;
           pred[v] = u;
           pq.push(
@@ -357,7 +357,7 @@ public:
     // print shortest distances
     for (auto d : dist) {
       std::cout << "[XAI] shortest distance to node " << d.first << " is "
-                << d.second << "...\n";
+                << d.second << " ...\n";
     }
 
     // recover the shortest path from predessesor map
@@ -374,7 +374,7 @@ public:
     for (int &n : shortestPath) {
       cout << "->" << n;
     }
-    cout << endl;
+    cout << " ...\n";
 
     shortestPath.push_front(sourceNodeKey); // add starting node at front
     return shortestPath;
@@ -865,14 +865,15 @@ Data Structures Used:
   - Chosen because graphs efficiently model networks and support traversal and
 pathfinding.
 
-2. unordered_map<int, Node<T>> adj
+2. std::unordered_map<int, Node<T>> adj
   - Stores nodes keyed by intersection ID.
   - Provides fast lookup, insertion, and deletion via hash table.
+  - Prevents duplicate nodes from being added, ensuring data integrity.
 
-3. set<forward_list<int>> routes
+3. std::set<forward_list<int>> routes
   - Holds user-defined routes as ordered lists of intersection IDs.
-  - forward_list<int> is used for efficient sequence manipulation.
-  - set ensures route uniqueness and fast operations.
+  - std::forward_list<int> is used for efficient sequence manipulation.
+  - std::set ensures route uniqueness and fast operations.
 
 Algorithms Used:
 
