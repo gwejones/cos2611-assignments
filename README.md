@@ -1,5 +1,9 @@
 # COS2611 Assignments
 
+## Module Purpose
+
+To show learners how abstract data types and data structures can be implemented and used in an object-oriented programming language. The module covers recursion, linked lists, dynamic memory allocation, binary trees, and graphs.
+
 ## Assignment 1: Public Transport Queue System
 
 ### Compile and Run
@@ -68,8 +72,8 @@ The simulation output should be displayed in a tabular format where:
 
 Each row represents a time step.
 Column Next displays the new passengers.
-Columns S, L anc C display the number of passengers in each queue.
-Columns waiting Q S, waiting Q L, waiting Q C display the passengers in the waiting queue that has to wait for the passenger infront of him/her. 
+Columns S, L and C display the number of passengers in each queue.
+Columns waiting Q S, waiting Q L, waiting Q C display the passengers in the waiting queue that has to wait for the passenger in front of him/her.
 Columns Taxi Capacity for S, L and C indicating the current capacity for the taxis.
 
 ## Assignment 2: Sorting Algorithms
@@ -225,9 +229,9 @@ Provide XAI output. Examples:
 “Route A → B was chosen because it is 2 km shorter than Route C → D.”
 “Shortest path was calculated using Dijkstra’s algorithm. Nodes visited: 5. Total cost: 12.”
 “Routes were sorted by travel time using a custom comparator functor.”
-Code comments: At every point in the program where an explanation is output, add (compuslory) a comment describing the reasoning. Example:
+Code comments: At every point in the program where an explanation is output, add (compulsory) a comment describing the reasoning. Example:
 
-// XAI: This code will provide explaination as to why or how a node was selected next (shortest known distance) - you may also include a short section explaining the algortihm that you have used.  Short - one or two sentences.  In other words - be transparent in your code and explain why you are doing something specifically - don't hide the reasoining behind "complicated" code for the next programmer.
+// XAI: This code will provide explanation as to why or how a node was selected next (shortest known distance) - you may also include a short section explaining the algorithm that you have used. Short - one or two sentences. In other words - be transparent in your code and explain why you are doing something specifically - don't hide the reasoning behind "complicated" code for the next programmer.
 
 ### Optional: AI Integration
 
