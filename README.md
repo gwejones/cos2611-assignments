@@ -2,6 +2,22 @@
 
 ## Assignment 1: Public Transport Queue System
 
+### Compile and Run
+
+Compile from repository root:
+
+```bash
+g++ -std=c++17 assignment_1/50052578A1.cpp -o assignment_1/as1
+```
+
+Run:
+
+```bash
+./assignment_1/as1
+```
+
+Note: this program currently reads from `C:\data\taxiData.txt`.
+
 ### Objective
 
 Using C++ and the linear data structures of queues and stacks, this project simulates a queue-based minibus taxi rank system—a common public transport method across Africa. The simulation will involve three types of taxis:
@@ -58,6 +74,20 @@ Columns Taxi Capacity for S, L and C indicating the current capacity for the tax
 
 ## Assignment 2: Sorting Algorithms
 
+### Compile and Run
+
+Compile from repository root:
+
+```bash
+g++ -std=c++17 assignment_2/50052578A2P1.cpp -o assignment_2/as2
+```
+
+Run:
+
+```bash
+./assignment_2/as2
+```
+
 ### PURPOSE
 
 This project aims to allow you, as a 2nd-year Computer Science student, the opportunity not only to implement a C++ solution but also to critically peer-review alternative solutions presented by your peers (other students).
@@ -90,7 +120,25 @@ The first algorithm must be Bubble Sort, while the second algorithm can be eithe
 
 ## Assignment 3: Transport Connectivity in Southern Africa
 
-Note on GenAI and XAI Usage: You are encouraged to use Generative AI tools (GenAI) to assist you in this project. However, you must apply Explainable AI (XAI) practices throughout your code by providing clear explanations and comments for each section to demonstrate your understanding. All prompts used with GenAI must be included at the end of your submission, along with a short reflection on what worked, what did not, and any changes you made to the AI-generated outputs. Remember, while AI can assist you, your explanations, understanding, and application of the concepts will be assessed.
+### Compile and Run
+
+Compile from repository root:
+
+```bash
+g++ -std=c++17 assignment_3/50052578_As3.cpp -o assignment_3/as3
+```
+
+Run:
+
+```bash
+./assignment_3/as3
+```
+
+Note: this program is interactive. Enter a negative start-city index to exit.
+
+### Note on GenAI and XAI Usage
+
+You are encouraged to use Generative AI tools (GenAI) to assist you in this project. However, you must apply Explainable AI (XAI) practices throughout your code by providing clear explanations and comments for each section to demonstrate your understanding. All prompts used with GenAI must be included at the end of your submission, along with a short reflection on what worked, what did not, and any changes you made to the AI-generated outputs. Remember, while AI can assist you, your explanations, understanding, and application of the concepts will be assessed.
 
 ### Background
 
@@ -108,6 +156,22 @@ Display the graph structure clearly, labelling each city.
 Follow Explainable AI (XAI) coding practices: comment thoroughly to explain each logical section to a non-programmer.
 
 ## Final Project: Smart City Route Management System
+
+### Compile and Run
+
+Compile from repository root:
+
+```bash
+g++ -std=c++17 project/50052578_FP.cpp -o project/final_project
+```
+
+Run:
+
+```bash
+./project/final_project
+```
+
+Note: this program is menu-driven. Select `5` to exit.
 
 ### Background
 
