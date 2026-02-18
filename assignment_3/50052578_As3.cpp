@@ -9,6 +9,7 @@
 #include <queue>
 #include <sstream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -70,42 +71,69 @@ public:
   //  every other vertex in the graph is determined The shortest path is
   //  returned.
   forward_list<int> shortestPath(const int vertex, const int dest) {
-    vector<int> predecessors(gSize, -1);
-    for (int j = 0; j < gSize; j++)
-      smallestWeight[j] = weights[vertex][j];
-    bool *weightFound;
-    weightFound = new bool[gSize];
-    for (int j = 0; j < gSize; j++)
-      weightFound[j] = false;
-    weightFound[vertex] = true;
-    smallestWeight[vertex] = 0;
-    for (int i = 0; i < gSize - 1; i++) {
-      int minWeight = INT_MAX;
-      int v = -1; // closest to vertex, for which shortest path has not being
-                  // determined
-      for (int j = 0; j < gSize; j++)
-        if (!weightFound[j])
-          if (smallestWeight[j] < minWeight) {
-            v = j;
-            minWeight = smallestWeight[v];
-          }
-      if (v == -1)
-        break; // Remaining vertices are unreachable
-      weightFound[v] = true;
-      for (int j = 0; j < gSize; j++)
-        if (!weightFound[j])
-          if (minWeight + weights[v][j] < smallestWeight[j]) {
-            smallestWeight[j] = minWeight + weights[v][j];
-            predecessors[j] = v; // Track predecessor
-          }
-    }
-    delete[] weightFound;
-
-    // Reconstruct path from dest to vertex
     forward_list<int> path;
+    if (vertex < 0 || vertex >= gSize || dest < 0 || dest >= gSize)
+      return path;
+
+    vector<int> predecessors(gSize, -1);
+    vector<bool> weightFound(gSize, false);
+
+    for (int i = 0; i < gSize; i++)
+      smallestWeight[i] = INT_MAX;
+
+    smallestWeight[vertex] = 0;
+
+    // Dijkstra: repeatedly pick the closest unvisited vertex and relax edges.
+    for (int i = 0; i < gSize; i++) {
+      int minWeight = INT_MAX;
+      int v = -1;
+
+      for (int j = 0; j < gSize; j++)
+        if (!weightFound[j] && smallestWeight[j] < minWeight) {
+          minWeight = smallestWeight[j];
+          v = j;
+        }
+
+      if (v == -1)
+        break; // no remaining reachable vertices
+
+      weightFound[v] = true;
+
+      if (v == dest)
+        break; // destination finalised
+
+      for (int neighbor : graph[v]) {
+        if (weightFound[neighbor])
+          continue;
+
+        const int edgeWeight = weights[v][neighbor];
+        if (edgeWeight == INT_MAX || smallestWeight[v] == INT_MAX)
+          continue;
+
+        if (smallestWeight[v] <= INT_MAX - edgeWeight) {
+          const int newWeight = smallestWeight[v] + edgeWeight;
+          if (newWeight < smallestWeight[neighbor]) {
+            smallestWeight[neighbor] = newWeight;
+            predecessors[neighbor] = v;
+          }
+        }
+      }
+    }
+
+    if (smallestWeight[dest] == INT_MAX)
+      return path; // no route from source to destination
+
     for (int at = dest; at != -1; at = predecessors[at])
       path.push_front(at);
+
     return path;
+  }
+
+  // Returns the previously computed shortest distance for a destination index.
+  int getShortestDistance(const int vertex) const {
+    if (vertex < 0 || vertex >= gSize)
+      return INT_MAX;
+    return smallestWeight[vertex];
   }
 
   // Function to print the shortest weight from vertex
@@ -172,7 +200,7 @@ public:
       delete[] weights[i];
     }
     delete[] weights;
-    delete smallestWeight;
+    delete[] smallestWeight;
   }
 
   friend void printAdjacencyMatrix(const weightedGraphType &graph);
@@ -227,6 +255,29 @@ void printReachableCities(forward_list<int> reachableCities) {
   cout << endl << endl;
 }
 
+// Prints a route returned by Dijkstra together with its total distance.
+void printShortestPath(const int startIndex, const int destIndex,
+                       const forward_list<int> &path, const int totalDistance) {
+  cout << "Shortest path from " << toStringFromIndex(startIndex) << " to "
+       << toStringFromIndex(destIndex) << ":" << endl;
+
+  if (path.empty()) {
+    cout << "No route available between these cities." << endl << endl;
+    return;
+  }
+
+  auto it = path.begin();
+  cout << toStringFromIndex(*it);
+  ++it;
+
+  while (it != path.end()) {
+    cout << " -> " << toStringFromIndex(*it);
+    ++it;
+  }
+
+  cout << "\nTotal distance: " << totalDistance << " km" << endl << endl;
+}
+
 // --- Section: Main Function ---
 int main() {
   weightedGraphType graph =
@@ -244,6 +295,12 @@ int main() {
     cin >> startIndex;
     if (startIndex < 0)
       break;
+    if (startIndex >= NUM_CITIES) {
+      cout << "Invalid starting city index. Please select 0 to "
+           << (NUM_CITIES - 1) << ".\n"
+           << endl;
+      continue;
+    }
 
     // show user possible destination cities
     forward_list<int> bft = graph.breadthFirstTraversal(startIndex);
@@ -252,9 +309,17 @@ int main() {
     // get desired destination city from user
     cout << "Select index of destination city: ";
     cin >> destIndex;
+    if (destIndex < 0 || destIndex >= NUM_CITIES) {
+      cout << "Invalid destination city index. Please select 0 to "
+           << (NUM_CITIES - 1) << ".\n"
+           << endl;
+      continue;
+    }
 
     // display shortest path to destination city
     forward_list<int> path = graph.shortestPath(startIndex, destIndex);
+    printShortestPath(startIndex, destIndex, path,
+                      graph.getShortestDistance(destIndex));
   }
 
   return 0;
